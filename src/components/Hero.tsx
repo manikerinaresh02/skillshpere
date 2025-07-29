@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { SkillGauge } from './SkillGauge';
+import { Link } from 'react-router-dom';
 
 export const Hero = () => {
   return (
@@ -58,9 +59,11 @@ export const Hero = () => {
               transition={{ duration: 0.8, delay: 1.1 }}
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <Button className="btn-primary rounded-xl px-8 py-4 text-lg font-semibold">
-                Explore Dashboard
-              </Button>
+              <Link to="/dashboard">
+                <Button className="btn-primary rounded-xl px-8 py-4 text-lg font-semibold">
+                  Explore Dashboard
+                </Button>
+              </Link>
               <Button 
                 variant="outline" 
                 className="rounded-xl px-8 py-4 text-lg font-semibold border-glass-border bg-glass/20 backdrop-blur-sm hover:bg-glass/30 transition-all duration-300"
