@@ -1,42 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Lato:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* SkillSphere Design System - Futuristic Career Dashboard */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
+    /* Base colors - Deep navy theme */
+    --background: 228 25% 8%;
+    --foreground: 210 40% 98%;
+    
+    /* Card system - Glassmorphic */
+    --card: 228 25% 10%;
+    --card-foreground: 210 40% 98%;
+    --glass: 228 25% 15%;
+    --glass-border: 210 40% 20%;
+    
+    /* Interactive elements */
+    --popover: 228 25% 12%;
+    --popover-foreground: 210 40% 98%;
+    
+    /* Brand colors - Coral primary */
+    --primary: 0 69% 64%;
+    --primary-glow: 0 69% 72%;
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
+    
+    /* Secondary - Aqua accents */
+    --secondary: 170 65% 60%;
+    --secondary-glow: 170 65% 68%;
+    --secondary-foreground: 228 25% 8%;
+    
+    /* Muted states */
+    --muted: 228 25% 15%;
+    --muted-foreground: 210 20% 65%;
+    
+    /* Accent - Purple highlights */
+    --accent: 255 70% 68%;
+    --accent-foreground: 210 40% 98%;
+    
+    /* System colors */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
+    
+    /* Borders and inputs */
+    --border: 228 25% 20%;
+    --input: 228 25% 15%;
+    --ring: 0 69% 64%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    --radius: 1rem;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary-glow)));
+    --gradient-cosmic: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--secondary)));
+    --gradient-glass: linear-gradient(135deg, hsla(var(--glass), 0.1), hsla(var(--glass), 0.05));
+    
+    /* Shadows and effects */
+    --shadow-glow: 0 0 40px hsla(var(--primary), 0.3);
+    --shadow-aqua: 0 0 30px hsla(var(--secondary), 0.4);
+    --shadow-glass: 0 8px 32px hsla(0, 0%, 0%, 0.3);
+    
+    /* Animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +128,93 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-lato antialiased;
+    background-image: 
+      radial-gradient(circle at 25% 25%, hsla(var(--accent), 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, hsla(var(--secondary), 0.1) 0%, transparent 50%);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-poppins font-bold;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-glass/10 backdrop-blur-xl border border-glass-border/20 shadow-glass;
+    background: var(--gradient-glass);
+  }
+  
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-glow text-primary-foreground font-semibold;
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-glow);
+    transition: var(--transition-smooth);
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 60px hsla(var(--primary), 0.5);
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary-glow text-secondary-foreground font-semibold;
+    background: var(--gradient-secondary);
+    transition: var(--transition-smooth);
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 20px hsla(var(--primary), 0.6);
+  }
+  
+  .border-glow {
+    box-shadow: 0 0 20px hsla(var(--secondary), 0.3);
+  }
+  
+  .floating {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .skill-gauge {
+    filter: drop-shadow(0 0 30px hsla(var(--primary), 0.4));
+  }
+}
+
+@layer utilities {
+  .animate-pulse-glow {
+    animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-slide-up {
+    animation: slide-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px hsla(var(--primary), 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 40px hsla(var(--primary), 0.6);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
