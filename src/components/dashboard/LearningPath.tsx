@@ -1,297 +1,521 @@
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, PlayCircle, Clock, Award, BookOpen, Target } from 'lucide-react';
+import { CheckCircle, PlayCircle, Clock, Award, BookOpen, Target, TrendingUp, Calendar, Users, AlertCircle } from 'lucide-react';
+
+// Define types locally to avoid import issues
+interface LearningStep {
+  id: string;
+  title: string;
+  description: string;
+  type: 'course' | 'project' | 'assessment' | 'practice' | 'resource';
+  duration: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  completed: boolean;
+  progress: number;
+  resources: {
+    title: string;
+    url: string;
+    type: 'video' | 'article' | 'documentation' | 'practice';
+  }[];
+  prerequisites: string[];
+  skills: string[];
+}
+
+interface LearningPath {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  steps: LearningStep[];
+  estimatedDuration: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  aiGenerated: boolean;
+  progress: number;
+  targetSkills: string[];
+  prerequisites: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export const LearningPath = () => {
-  const currentPath = {
-    title: 'Full Stack Development',
-    description: 'Master modern web development with React, Node.js, and cloud technologies',
-    progress: 65,
-    totalHours: 120,
-    completedHours: 78,
-    estimatedCompletion: '3 weeks',
-    skills: ['React', 'Node.js', 'TypeScript', 'AWS'],
-  };
+  const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
+  const [currentPath, setCurrentPath] = useState<LearningPath | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
 
-  const courses = [
-    {
-      id: 1,
-      title: 'Advanced React Patterns',
-      instructor: 'Sarah Chen',
-      duration: '8 hours',
-      progress: 100,
-      status: 'completed',
-      rating: 4.8,
-      skills: ['React', 'TypeScript'],
-    },
-    {
-      id: 2,
-      title: 'Node.js Backend Development',
-      instructor: 'Mike Johnson',
-      duration: '12 hours',
-      progress: 75,
-      status: 'in-progress',
-      rating: 4.6,
-      skills: ['Node.js', 'Express', 'MongoDB'],
-    },
-    {
-      id: 3,
-      title: 'AWS Cloud Architecture',
-      instructor: 'Alex Rodriguez',
-      duration: '15 hours',
-      progress: 0,
-      status: 'upcoming',
-      rating: 4.9,
-      skills: ['AWS', 'Cloud Computing'],
-    },
-    {
-      id: 4,
-      title: 'TypeScript Mastery',
-      instructor: 'Emma Wilson',
-      duration: '10 hours',
-      progress: 0,
-      status: 'upcoming',
-      rating: 4.7,
-      skills: ['TypeScript', 'JavaScript'],
-    },
-  ];
+  useEffect(() => {
+    const fetchLearningPaths = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Use mock data directly instead of service call
+        const mockPaths: LearningPath[] = [
+          {
+            id: 'path-1',
+            userId: 'current-user',
+            title: 'React to Full-Stack Developer',
+            description: 'A comprehensive path to become a full-stack developer with React',
+            steps: [
+              {
+                id: 'step-1',
+                title: 'React Fundamentals',
+                description: 'Learn the basics of React including components, props, and state',
+                type: 'course',
+                duration: 10,
+                difficulty: 'beginner',
+                completed: true,
+                progress: 100,
+                resources: [
+                  {
+                    title: 'React Official Documentation',
+                    url: 'https://react.dev',
+                    type: 'documentation'
+                  }
+                ],
+                prerequisites: [],
+                skills: ['react', 'javascript']
+              },
+              {
+                id: 'step-2',
+                title: 'Build a Todo App',
+                description: 'Create a simple todo application to practice React concepts',
+                type: 'project',
+                duration: 5,
+                difficulty: 'beginner',
+                completed: false,
+                progress: 60,
+                resources: [
+                  {
+                    title: 'Todo App Tutorial',
+                    url: '#',
+                    type: 'video'
+                  }
+                ],
+                prerequisites: ['step-1'],
+                skills: ['react', 'javascript', 'html', 'css']
+              },
+              {
+                id: 'step-3',
+                title: 'React Hooks Deep Dive',
+                description: 'Master advanced React hooks and custom hooks',
+                type: 'course',
+                duration: 8,
+                difficulty: 'intermediate',
+                completed: false,
+                progress: 0,
+                resources: [
+                  {
+                    title: 'React Hooks Guide',
+                    url: '#',
+                    type: 'article'
+                  }
+                ],
+                prerequisites: ['step-1', 'step-2'],
+                skills: ['react', 'hooks', 'javascript']
+              }
+            ],
+            estimatedDuration: 50,
+            difficulty: 'intermediate',
+            aiGenerated: true,
+            progress: 35,
+            targetSkills: ['react', 'javascript', 'nodejs'],
+            prerequisites: ['javascript-basics'],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'path-2',
+            userId: 'current-user',
+            title: 'Senior Frontend Engineer',
+            description: 'Advanced frontend development with modern tools and best practices',
+            steps: [
+              {
+                id: 'step-4',
+                title: 'TypeScript Mastery',
+                description: 'Learn TypeScript for better type safety and developer experience',
+                type: 'course',
+                duration: 12,
+                difficulty: 'intermediate',
+                completed: false,
+                progress: 25,
+                resources: [
+                  {
+                    title: 'TypeScript Handbook',
+                    url: '#',
+                    type: 'documentation'
+                  }
+                ],
+                prerequisites: ['javascript-basics'],
+                skills: ['typescript', 'javascript']
+              }
+            ],
+            estimatedDuration: 40,
+            difficulty: 'advanced',
+            aiGenerated: true,
+            progress: 10,
+            targetSkills: ['react', 'typescript', 'testing'],
+            prerequisites: ['react-basics'],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        ];
+        
+        setLearningPaths(mockPaths);
+        if (mockPaths.length > 0) {
+          setCurrentPath(mockPaths[0]);
+          setSelectedPath(mockPaths[0].id);
+        }
+      } catch (error) {
+        console.error('Error fetching learning paths:', error);
+        setError('Failed to load learning paths. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const recommendations = [
-    {
-      title: 'Machine Learning Fundamentals',
-      reason: 'High market demand',
-      match: 92,
-      duration: '20 hours',
-      skills: ['Python', 'TensorFlow', 'Scikit-learn'],
-    },
-    {
-      title: 'DevOps with Docker & Kubernetes',
-      reason: 'Career advancement',
-      match: 88,
-      duration: '16 hours',
-      skills: ['Docker', 'Kubernetes', 'CI/CD'],
-    },
-    {
-      title: 'Data Structures & Algorithms',
-      reason: 'Interview preparation',
-      match: 85,
-      duration: '25 hours',
-      skills: ['Algorithms', 'Data Structures', 'Problem Solving'],
-    },
-  ];
+    fetchLearningPaths();
+  }, []);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return <CheckCircle className="w-5 h-5 text-primary" />;
-      case 'in-progress': return <PlayCircle className="w-5 h-5 text-secondary" />;
-      case 'upcoming': return <Clock className="w-5 h-5 text-muted-foreground" />;
-      default: return <Clock className="w-5 h-5 text-muted-foreground" />;
+  const handlePathSelect = (pathId: string) => {
+    const path = learningPaths.find(p => p.id === pathId);
+    if (path) {
+      setCurrentPath(path);
+      setSelectedPath(pathId);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-primary text-primary-foreground';
-      case 'in-progress': return 'bg-secondary text-secondary-foreground';
-      case 'upcoming': return 'bg-muted text-muted-foreground';
-      default: return 'bg-muted text-muted-foreground';
+  const handleStepComplete = async (stepId: string) => {
+    if (!currentPath) return;
+
+    try {
+      // This function is not implemented in the new mock data,
+      // so it will not have an effect on the mock data.
+      // In a real scenario, you would call an AI service here.
+      console.log(`Attempting to complete step: ${stepId}`);
+      // For now, we'll just update the progress of the current path
+      // to simulate completion of the last step.
+      if (currentPath.steps.length > 0) {
+        const lastStep = currentPath.steps[currentPath.steps.length - 1];
+        if (lastStep.id === stepId) {
+          const updatedPath = { ...currentPath, progress: 100 };
+          setCurrentPath(updatedPath);
+          setLearningPaths(prev => prev.map(p => p.id === updatedPath.id ? updatedPath : p));
+        }
+      }
+    } catch (error) {
+      console.error('Error updating learning path:', error);
     }
   };
+
+  const getStepIcon = (type: string) => {
+    switch (type) {
+      case 'course':
+        return <BookOpen className="w-4 h-4" />;
+      case 'project':
+        return <Target className="w-4 h-4" />;
+      case 'assessment':
+        return <Award className="w-4 h-4" />;
+      case 'practice':
+        return <PlayCircle className="w-4 h-4" />;
+      case 'resource':
+        return <BookOpen className="w-4 h-4" />;
+      default:
+        return <BookOpen className="w-4 h-4" />;
+    }
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'bg-green-100 text-green-800';
+      case 'intermediate':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'advanced':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <Card className="glass-card">
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                  <div className="h-8 bg-muted rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          <Card className="glass-card">
+            <CardContent className="p-6">
+              <div className="animate-pulse">
+                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                <div className="h-8 bg-muted rounded w-1/2"></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6 text-center py-12">
+        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold mb-2">Error Loading Learning Paths</h3>
+        <p className="text-muted-foreground">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Current Learning Path */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Target className="w-5 h-5" />
-              <span>Current Learning Path</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-xl font-poppins font-bold text-foreground mb-2">
-                  {currentPath.title}
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  {currentPath.description}
-                </p>
-                
-                <div className="grid md:grid-cols-3 gap-4 mb-4">
-                  <div className="text-center p-3 rounded-lg bg-glass/20">
-                    <div className="text-2xl font-bold text-primary">{currentPath.progress}%</div>
-                    <div className="text-sm text-muted-foreground">Progress</div>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-glass/20">
-                    <div className="text-2xl font-bold text-secondary">{currentPath.completedHours}h</div>
-                    <div className="text-sm text-muted-foreground">Completed</div>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-glass/20">
-                    <div className="text-2xl font-bold text-accent">{currentPath.estimatedCompletion}</div>
-                    <div className="text-sm text-muted-foreground">Time to Complete</div>
-                  </div>
-                </div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground flex items-center space-x-2">
+            <BookOpen className="w-6 h-6 text-primary" />
+            <span>Learning Paths</span>
+          </h2>
+          <p className="text-muted-foreground">AI-powered personalized learning journeys</p>
+        </div>
+      </div>
 
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Overall Progress</span>
-                    <span className="text-sm font-bold text-primary">{currentPath.progress}%</span>
-                  </div>
-                  <Progress value={currentPath.progress} className="h-3" />
-                </div>
-
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {currentPath.skills.map((skill) => (
-                    <Badge key={skill} variant="outline" className="text-xs">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Course Progress */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-      >
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <BookOpen className="w-5 h-5" />
-              <span>Course Progress</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {courses.map((course, index) => (
-                <div key={course.id} className="p-4 rounded-lg bg-glass/20 border border-glass-border/20">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-start space-x-3">
-                      {getStatusIcon(course.status)}
-                      <div>
-                        <h4 className="font-semibold text-foreground">{course.title}</h4>
-                        <p className="text-sm text-muted-foreground">by {course.instructor}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Learning Paths List */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Available Paths</h3>
+          <div className="space-y-3">
+            {learningPaths.map((path) => (
+              <motion.div
+                key={path.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card 
+                  className={`glass-card cursor-pointer transition-all duration-300 ${
+                    selectedPath === path.id ? 'ring-2 ring-primary' : 'hover:bg-glass/20'
+                  }`}
+                  onClick={() => handlePathSelect(path.id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-foreground">{path.title}</h4>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{path.description}</p>
+                        </div>
+                        <Badge variant="outline" className={getDifficultyColor(path.difficulty)}>
+                          {path.difficulty}
+                        </Badge>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={getStatusColor(course.status)}>
-                        {course.status}
-                      </Badge>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">★ {course.rating}</div>
-                        <div className="text-xs text-muted-foreground">{course.duration}</div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Progress</span>
+                          <span>{path.progress}%</span>
+                        </div>
+                        <Progress value={path.progress} className="h-2" />
                       </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2 mb-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Progress</span>
-                      <span className="text-sm font-bold text-primary">{course.progress}%</span>
-                    </div>
-                    <Progress value={course.progress} className="h-2" />
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {course.skills.map((skill) => (
-                      <Badge key={skill} variant="outline" className="text-xs">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  <div className="flex space-x-2">
-                    {course.status === 'completed' && (
-                      <Button size="sm" variant="outline" className="flex-1 glass-card">
-                        <Award className="w-3 h-3 mr-1" />
-                        Certificate
-                      </Button>
-                    )}
-                    {course.status === 'in-progress' && (
-                      <Button size="sm" className="flex-1 btn-primary">
-                        <PlayCircle className="w-3 h-3 mr-1" />
-                        Continue
-                      </Button>
-                    )}
-                    {course.status === 'upcoming' && (
-                      <Button size="sm" variant="outline" className="flex-1 glass-card">
-                        <BookOpen className="w-3 h-3 mr-1" />
-                        Start
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
 
-      {/* Learning Recommendations */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <span>🎯</span>
-              <span>Recommended Learning</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              {recommendations.map((rec, index) => (
-                <div key={rec.title} className="p-4 rounded-lg bg-glass/20 border border-glass-border/20 hover:bg-glass/30 transition-all duration-300">
-                  <div className="flex items-start justify-between mb-3">
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center space-x-1">
+                          <Clock className="w-3 h-3" />
+                          <span>{path.estimatedDuration}h</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Target className="w-3 h-3" />
+                          <span>{path.steps.length} steps</span>
+                        </div>
+                      </div>
+
+                      {path.aiGenerated && (
+                        <Badge variant="secondary" className="text-xs">
+                          AI Generated
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Current Path Details */}
+        <div className="lg:col-span-2">
+          {currentPath ? (
+            <div className="space-y-6">
+              {/* Path Overview */}
+              <Card className="glass-card">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="font-semibold text-foreground">{rec.title}</h4>
-                      <p className="text-xs text-muted-foreground">{rec.reason}</p>
+                      <CardTitle className="text-xl">{currentPath.title}</CardTitle>
+                      <p className="text-muted-foreground mt-1">{currentPath.description}</p>
                     </div>
-                    <Badge className="bg-primary text-primary-foreground">
-                      {rec.match}% match
+                    <Badge variant="outline" className={getDifficultyColor(currentPath.difficulty)}>
+                      {currentPath.difficulty}
                     </Badge>
                   </div>
-                  
-                  <div className="space-y-2 mb-3">
-                    <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      <span>{rec.duration}</span>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">{currentPath.progress}%</div>
+                      <div className="text-sm text-muted-foreground">Progress</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-secondary">{currentPath.estimatedDuration}h</div>
+                      <div className="text-sm text-muted-foreground">Duration</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-accent">{currentPath.steps.length}</div>
+                      <div className="text-sm text-muted-foreground">Steps</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {currentPath.steps.filter(s => s.completed).length}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Completed</div>
                     </div>
                   </div>
-                  
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {rec.skills.map((skill) => (
-                      <Badge key={skill} variant="outline" className="text-xs">
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Overall Progress</span>
+                      <span>{currentPath.progress}%</span>
+                    </div>
+                    <Progress value={currentPath.progress} className="h-3" />
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {currentPath.targetSkills.map((skill) => (
+                      <Badge key={skill} variant="outline">
                         {skill}
                       </Badge>
                     ))}
                   </div>
-                  
-                  <Button size="sm" className="w-full btn-primary">
-                    Add to Path
-                  </Button>
-                </div>
-              ))}
+                </CardContent>
+              </Card>
+
+              {/* Learning Steps */}
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Target className="w-5 h-5" />
+                    <span>Learning Steps</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {currentPath.steps.map((step, index) => (
+                      <motion.div
+                        key={step.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                        className={`p-4 rounded-lg border transition-all duration-300 ${
+                          step.completed 
+                            ? 'border-green-200 bg-green-50/20' 
+                            : 'border-glass-border/20 hover:bg-glass/20'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-3 flex-1">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              step.completed 
+                                ? 'bg-green-100 text-green-600' 
+                                : 'bg-muted text-muted-foreground'
+                            }`}>
+                              {step.completed ? (
+                                <CheckCircle className="w-4 h-4" />
+                              ) : (
+                                <span className="text-sm font-medium">{index + 1}</span>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-1">
+                                {getStepIcon(step.type)}
+                                <h4 className="font-semibold text-foreground">{step.title}</h4>
+                                <Badge variant="outline" className={getDifficultyColor(step.difficulty)}>
+                                  {step.difficulty}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">{step.description}</p>
+                              
+                              <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+                                <div className="flex items-center space-x-1">
+                                  <Clock className="w-3 h-3" />
+                                  <span>{step.duration}h</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <Target className="w-3 h-3" />
+                                  <span>{step.progress}% complete</span>
+                                </div>
+                              </div>
+
+                              {step.resources.length > 0 && (
+                                <div className="mt-3">
+                                  <p className="text-xs font-medium text-muted-foreground mb-1">Resources:</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {step.resources.slice(0, 3).map((resource, idx) => (
+                                      <Badge key={idx} variant="outline" className="text-xs">
+                                        {resource.title}
+                                      </Badge>
+                                    ))}
+                                    {step.resources.length > 3 && (
+                                      <Badge variant="outline" className="text-xs">
+                                        +{step.resources.length - 3} more
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {!step.completed && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleStepComplete(step.id)}
+                              className="flex-shrink-0"
+                            >
+                              <PlayCircle className="w-4 h-4 mr-2" />
+                              Start
+                            </Button>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          ) : (
+            <div className="text-center py-12">
+              <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Select a Learning Path</h3>
+              <p className="text-muted-foreground">
+                Choose a learning path from the list to view detailed steps and progress
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }; 

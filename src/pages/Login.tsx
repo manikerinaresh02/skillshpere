@@ -1,27 +1,61 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Eye, EyeOff, Mail, Lock, Github, Chrome } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isLoading, error, clearError, isAuthenticated, setError } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
+
+  // Debug error state
+  useEffect(() => {
+    if (error) {
+      console.log('Error state in Login component:', error);
+    }
+  }, [error]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate('/dashboard');
-    }, 2000);
+    const formData = new FormData(e.currentTarget);
+    
+    const credentials = {
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+    };
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(credentials.email)) {
+      // Set error using the auth context
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    try {
+      await login(credentials);
+      // Navigation will be handled by useEffect when isAuthenticated changes
+    } catch (error) {
+      // Error is handled by the auth context and will be displayed
+      console.error('Login error:', error);
+    }
   };
 
   return (
@@ -66,16 +100,30 @@ const Login = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Error Message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg"
+                >
+                  <p className="text-sm text-destructive">{error}</p>
+                </motion.div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="Enter your email"
                     className="pl-10"
                     required
+                    disabled={isLoading}
+                    onChange={() => error && clearError()}
                   />
                 </div>
               </div>
@@ -86,10 +134,13 @@ const Login = () => {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     className="pl-10 pr-10"
                     required
+                    disabled={isLoading}
+                    onChange={() => error && clearError()}
                   />
                   <button
                     type="button"
@@ -103,7 +154,12 @@ const Login = () => {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="remember" />
+                  <Checkbox 
+                    id="remember" 
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    disabled={isLoading}
+                  />
                   <Label htmlFor="remember" className="text-sm">Remember me</Label>
                 </div>
                 <Link to="/forgot-password" className="text-sm text-primary hover:underline">
@@ -116,7 +172,14 @@ const Login = () => {
                 className="w-full btn-primary" 
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
               </Button>
 
               <div className="relative">
@@ -129,11 +192,11 @@ const Login = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="glass-card">
+                <Button variant="outline" className="glass-card" disabled={isLoading}>
                   <Github className="w-4 h-4 mr-2" />
                   GitHub
                 </Button>
-                <Button variant="outline" className="glass-card">
+                <Button variant="outline" className="glass-card" disabled={isLoading}>
                   <Chrome className="w-4 h-4 mr-2" />
                   Google
                 </Button>

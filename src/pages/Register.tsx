@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,27 +8,128 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Eye, EyeOff, Mail, Lock, User, Building, Github, Chrome } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+
+interface RegisterData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  username: string;
+  jobTitle?: string;
+  company?: string;
+  experience?: string;
+  interests?: string;
+  phone?: string;
+}
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState<Partial<RegisterData>>({});
+  const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+  const location = useLocation();
+  const { register, isLoading, error, clearError, isAuthenticated } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
+
+  // Clear error when component mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
+  const handleInputChange = (field: keyof RegisterData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear step error when user starts typing
+    if (stepErrors[field]) {
+      setStepErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const validateStep = (currentStep: number): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (currentStep === 1) {
+      if (!formData.firstName?.trim()) errors.firstName = 'First name is required';
+      if (!formData.lastName?.trim()) errors.lastName = 'Last name is required';
+      if (!formData.email?.trim()) errors.email = 'Email is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        errors.email = 'Please enter a valid email';
+      }
+      // Phone number is optional, so no validation needed
+    }
+
+    if (currentStep === 2) {
+      if (!formData.username?.trim()) errors.username = 'Username is required';
+      if (!formData.password?.trim()) errors.password = 'Password is required';
+      else if (formData.password.length < 8) {
+        errors.password = 'Password must be at least 8 characters';
+      }
+      if (!formData.confirmPassword?.trim()) errors.confirmPassword = 'Please confirm your password';
+      else if (formData.password !== formData.confirmPassword) {
+        errors.confirmPassword = 'Passwords do not match';
+      }
+    }
+
+    if (currentStep === 3) {
+      // Step 3 doesn't have required fields, so no validation needed
+      return true;
+    }
+
+    setStepErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Simulate registration process
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate('/dashboard');
-    }, 2000);
+    console.log('Form submitted, current step:', step);
+    console.log('Form data:', formData);
+    
+    // Only validate and submit on step 3
+    if (step === 3) {
+      console.log('Processing step 3 registration');
+      try {
+        const registerData: RegisterData = {
+          firstName: formData.firstName || '',
+          lastName: formData.lastName || '',
+          email: formData.email || '',
+          password: formData.password || '',
+          confirmPassword: formData.confirmPassword,
+          username: formData.username || '',
+          jobTitle: formData.jobTitle,
+          company: formData.company,
+          experience: formData.experience,
+          interests: formData.interests,
+          phone: formData.phone || '',
+        };
+
+        console.log('Calling register with data:', registerData);
+        await register(registerData);
+        console.log('Registration completed successfully');
+        // Navigation will be handled by useEffect when isAuthenticated changes
+      } catch (error) {
+        console.error('Registration error in component:', error);
+        // Error is handled by the auth context
+      }
+    } else {
+      console.log('Not on step 3, current step:', step);
+    }
   };
 
   const nextStep = () => {
-    setStep(step + 1);
+    if (validateStep(step)) {
+      setStep(step + 1);
+    }
   };
 
   const prevStep = () => {
@@ -76,8 +177,8 @@ const Register = () => {
             {[1, 2, 3].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                  step >= stepNumber 
-                    ? 'bg-primary text-primary-foreground' 
+                  step >= stepNumber
+                    ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground'
                 }`}>
                   {stepNumber}
@@ -108,6 +209,17 @@ const Register = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Error Message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg"
+                >
+                  <p className="text-sm text-destructive">{error}</p>
+                </motion.div>
+              )}
+
               {step === 1 && (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
@@ -122,12 +234,19 @@ const Register = () => {
                         <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="firstName"
+                          name="firstName"
                           type="text"
                           placeholder="John"
-                          className="pl-10"
+                          className={`pl-10 ${stepErrors.firstName ? 'border-destructive' : ''}`}
                           required
+                          disabled={isLoading}
+                          value={formData.firstName || ''}
+                          onChange={(e) => handleInputChange('firstName', e.target.value)}
                         />
                       </div>
+                      {stepErrors.firstName && (
+                        <p className="text-xs text-destructive">{stepErrors.firstName}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
@@ -135,35 +254,53 @@ const Register = () => {
                         <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="lastName"
+                          name="lastName"
                           type="text"
                           placeholder="Doe"
-                          className="pl-10"
+                          className={`pl-10 ${stepErrors.lastName ? 'border-destructive' : ''}`}
                           required
+                          disabled={isLoading}
+                          value={formData.lastName || ''}
+                          onChange={(e) => handleInputChange('lastName', e.target.value)}
                         />
                       </div>
+                      {stepErrors.lastName && (
+                        <p className="text-xs text-destructive">{stepErrors.lastName}</p>
+                      )}
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="john.doe@example.com"
-                        className="pl-10"
+                        className={`pl-10 ${stepErrors.email ? 'border-destructive' : ''}`}
                         required
+                        disabled={isLoading}
+                        value={formData.email || ''}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
                       />
                     </div>
+                    {stepErrors.email && (
+                      <p className="text-xs text-destructive">{stepErrors.email}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input
                       id="phone"
+                      name="phone"
                       type="tel"
                       placeholder="+1 (555) 123-4567"
+                      disabled={isLoading}
+                      value={formData.phone || ''}
+                      onChange={(e) => handleInputChange('phone' as keyof RegisterData, e.target.value)}
                     />
                   </div>
                 </motion.div>
@@ -180,10 +317,18 @@ const Register = () => {
                     <Label htmlFor="username">Username</Label>
                     <Input
                       id="username"
+                      name="username"
                       type="text"
                       placeholder="johndoe"
+                      className={stepErrors.username ? 'border-destructive' : ''}
                       required
+                      disabled={isLoading}
+                      value={formData.username || ''}
+                      onChange={(e) => handleInputChange('username', e.target.value)}
                     />
+                    {stepErrors.username && (
+                      <p className="text-xs text-destructive">{stepErrors.username}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -192,19 +337,27 @@ const Register = () => {
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="password"
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Create a strong password"
-                        className="pl-10 pr-10"
+                        className={`pl-10 pr-10 ${stepErrors.password ? 'border-destructive' : ''}`}
                         required
+                        disabled={isLoading}
+                        value={formData.password || ''}
+                        onChange={(e) => handleInputChange('password', e.target.value)}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3 top-3 text-muted-foreground hover:text-foreground disabled:opacity-50"
+                        disabled={isLoading}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    {stepErrors.password && (
+                      <p className="text-xs text-destructive">{stepErrors.password}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -213,19 +366,27 @@ const Register = () => {
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="confirmPassword"
+                        name="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="Confirm your password"
-                        className="pl-10 pr-10"
+                        className={`pl-10 pr-10 ${stepErrors.confirmPassword ? 'border-destructive' : ''}`}
                         required
+                        disabled={isLoading}
+                        value={formData.confirmPassword || ''}
+                        onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3 top-3 text-muted-foreground hover:text-foreground disabled:opacity-50"
+                        disabled={isLoading}
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    {stepErrors.confirmPassword && (
+                      <p className="text-xs text-destructive">{stepErrors.confirmPassword}</p>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -241,8 +402,12 @@ const Register = () => {
                     <Label htmlFor="jobTitle">Job Title</Label>
                     <Input
                       id="jobTitle"
+                      name="jobTitle"
                       type="text"
                       placeholder="e.g., Senior Developer"
+                      disabled={isLoading}
+                      value={formData.jobTitle || ''}
+                      onChange={(e) => handleInputChange('jobTitle', e.target.value)}
                     />
                   </div>
 
@@ -252,16 +417,24 @@ const Register = () => {
                       <Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="company"
+                        name="company"
                         type="text"
                         placeholder="e.g., TechCorp"
                         className="pl-10"
+                        disabled={isLoading}
+                        value={formData.company || ''}
+                        onChange={(e) => handleInputChange('company', e.target.value)}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="experience">Years of Experience</Label>
-                    <Select>
+                    <Select 
+                      value={formData.experience || ''} 
+                      onValueChange={(value) => handleInputChange('experience', value)}
+                      disabled={isLoading}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select experience level" />
                       </SelectTrigger>
@@ -277,7 +450,11 @@ const Register = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="interests">Primary Interests</Label>
-                    <Select>
+                    <Select 
+                      value={formData.interests || ''} 
+                      onValueChange={(value) => handleInputChange('interests', value)}
+                      disabled={isLoading}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select your interests" />
                       </SelectTrigger>
@@ -295,7 +472,7 @@ const Register = () => {
               )}
 
               <div className="flex items-center space-x-2">
-                <Checkbox id="terms" required />
+                <Checkbox id="terms" required disabled={isLoading} />
                 <Label htmlFor="terms" className="text-sm">
                   I agree to the{' '}
                   <Link to="/terms" className="text-primary hover:underline">
@@ -315,6 +492,7 @@ const Register = () => {
                     variant="outline"
                     onClick={prevStep}
                     className="flex-1 glass-card"
+                    disabled={isLoading}
                   >
                     Previous
                   </Button>
@@ -324,16 +502,24 @@ const Register = () => {
                     type="button"
                     onClick={nextStep}
                     className="flex-1 btn-primary"
+                    disabled={isLoading}
                   >
                     Next
                   </Button>
                 ) : (
-                  <Button 
-                    type="submit" 
-                    className="flex-1 btn-primary" 
+                  <Button
+                    type="submit"
+                    className="flex-1 btn-primary"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Creating Account...' : 'Create Account'}
+                    {isLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
+                        Creating Account...
+                      </>
+                    ) : (
+                      'Create Account'
+                    )}
                   </Button>
                 )}
               </div>
@@ -352,11 +538,11 @@ const Register = () => {
 
             {step === 1 && (
               <div className="grid grid-cols-2 gap-4 mt-4">
-                <Button variant="outline" className="glass-card">
+                <Button variant="outline" className="glass-card" disabled={isLoading}>
                   <Github className="w-4 h-4 mr-2" />
                   GitHub
                 </Button>
-                <Button variant="outline" className="glass-card">
+                <Button variant="outline" className="glass-card" disabled={isLoading}>
                   <Chrome className="w-4 h-4 mr-2" />
                   Google
                 </Button>

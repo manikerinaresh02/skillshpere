@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { Button } from './ui/button';
 import { SkillGauge } from './SkillGauge';
 import { Link } from 'react-router-dom';
 

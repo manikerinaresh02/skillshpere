@@ -2,10 +2,17 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, Settings, Plus } from 'lucide-react';
+import { User } from '../../services/auth';
 
-export const DashboardHeader = () => {
-  const user = {
-    name: 'Alex Chen',
+interface DashboardHeaderProps {
+  user: User | null;
+}
+
+export const DashboardHeader = ({ user }: DashboardHeaderProps) => {
+  // Fallback user data if user is null
+  const userData = user || {
+    firstName: 'Alex',
+    lastName: 'Chen',
     email: 'alex.chen@example.com',
     avatar: '/placeholder.svg',
     role: 'Senior Developer',
@@ -24,18 +31,18 @@ export const DashboardHeader = () => {
           {/* User Info */}
           <div className="flex items-center space-x-4">
             <Avatar className="w-16 h-16 border-2 border-primary/20">
-              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarImage src={userData.avatar} alt={`${userData.firstName} ${userData.lastName}`} />
               <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">
-                {user.name.split(' ').map(n => n[0]).join('')}
+                {userData.firstName.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
-            
+
             <div>
               <h1 className="text-2xl font-poppins font-bold text-foreground">
-                Welcome back, {user.name.split(' ')[0]}! 👋
+                Welcome back, {userData.firstName}! 👋
               </h1>
               <p className="text-muted-foreground">
-                {user.role} at {user.company} • Last updated 2 hours ago
+                {userData.role} at {userData.company} • Last updated 2 hours ago
               </p>
             </div>
           </div>

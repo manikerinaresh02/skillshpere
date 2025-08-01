@@ -1,10 +1,15 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { LogOut, Menu, X } from 'lucide-react';
+import { useState } from 'react';
 
 export const Navigation = () => {
   const location = useLocation();
-  
+  const { user, isAuthenticated, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const navItems = [
     { label: 'Home', href: '/', active: location.pathname === '/' },
     { label: 'Dashboard', href: '/dashboard', active: location.pathname === '/dashboard' },
@@ -20,7 +25,7 @@ export const Navigation = () => {
   }
 
   return (
-    <motion.nav 
+    <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -29,7 +34,7 @@ export const Navigation = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <motion.div 
+          <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -43,7 +48,7 @@ export const Navigation = () => {
             </Link>
           </motion.div>
 
-          {/* Navigation Items */}
+          {/* Desktop Navigation Items */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item, index) => (
               <motion.div
@@ -55,8 +60,8 @@ export const Navigation = () => {
                 <Link
                   to={item.href}
                   className={`font-lato font-medium transition-all duration-300 hover:text-primary ${
-                    item.active 
-                      ? 'text-primary text-glow' 
+                    item.active
+                      ? 'text-primary text-glow'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -66,19 +71,29 @@ export const Navigation = () => {
             ))}
           </div>
 
-          {/* CTA Buttons */}
+          {/* Desktop CTA Buttons */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex items-center space-x-3"
+            className="hidden md:flex items-center space-x-3"
           >
-            {location.pathname === '/dashboard' ? (
-              <Link to="/profile">
-                <Button variant="outline" className="glass-card">
-                  Profile
+            {isAuthenticated ? (
+              <>
+                <Link to="/profile">
+                  <Button variant="outline" className="glass-card">
+                    Profile
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline" 
+                  className="glass-card text-destructive hover:text-destructive"
+                  onClick={logout}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
                 </Button>
-              </Link>
+              </>
             ) : (
               <>
                 <Link to="/login">
@@ -94,7 +109,84 @@ export const Navigation = () => {
               </>
             )}
           </motion.div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="glass-card"
+            >
+              {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="md:hidden mt-4 pt-4 border-t border-glass-border/20"
+          >
+            {/* Mobile Navigation Items */}
+            <div className="space-y-2 mb-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block py-2 px-3 rounded-lg font-lato font-medium transition-all duration-300 ${
+                    item.active
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-glass/20'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Mobile CTA Buttons */}
+            <div className="space-y-2">
+              {isAuthenticated ? (
+                <>
+                  <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="outline" className="glass-card w-full">
+                      Profile
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    className="glass-card text-destructive hover:text-destructive w-full"
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="outline" className="glass-card w-full">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button className="btn-primary w-full">
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
       </div>
     </motion.nav>
   );

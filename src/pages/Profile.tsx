@@ -13,24 +13,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { User, Mail, Phone, Building, MapPin, Edit, Save, Camera, Settings, Bell, Shield, Palette } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
+  const { user } = useAuth();
 
-  const user = {
-    name: 'Alex Chen',
+  // Use authenticated user data or fallback to demo data
+  const userData = user || {
+    firstName: 'Alex',
+    lastName: 'Chen',
     email: 'alex.chen@example.com',
-    phone: '+1 (555) 123-4567',
-    avatar: '/placeholder.svg',
+    username: 'alexchen',
     role: 'Senior Developer',
     company: 'TechCorp',
-    location: 'San Francisco, CA',
-    bio: 'Passionate full-stack developer with 5+ years of experience in React, Node.js, and cloud technologies. Always eager to learn new skills and contribute to innovative projects.',
-    skills: ['React', 'Node.js', 'TypeScript', 'AWS', 'Python', 'MongoDB'],
+    jobTitle: 'Senior Developer',
     experience: '5 years',
-    education: 'BS Computer Science, Stanford University',
+    interests: 'Full Stack Development',
+    avatar: '/placeholder.svg',
   };
+
+  const fullName = `${userData.firstName} ${userData.lastName}`;
+  const initials = `${userData.firstName?.[0] || 'A'}${userData.lastName?.[0] || 'C'}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,9 +57,9 @@ const Profile = () => {
                   <div className="flex flex-col items-center space-y-4">
                     <div className="relative">
                       <Avatar className="w-32 h-32 border-4 border-primary/20">
-                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarImage src={userData.avatar} alt={fullName} />
                         <AvatarFallback className="bg-primary/10 text-primary font-bold text-3xl">
-                          {user.name.split(' ').map(n => n[0]).join('')}
+                          {initials}
                         </AvatarFallback>
                       </Avatar>
                       <Button size="sm" className="absolute -bottom-2 -right-2 rounded-full w-10 h-10 p-0">
@@ -62,8 +67,8 @@ const Profile = () => {
                       </Button>
                     </div>
                     <div className="text-center">
-                      <h1 className="text-2xl font-poppins font-bold text-foreground">{user.name}</h1>
-                      <p className="text-muted-foreground">{user.role} at {user.company}</p>
+                      <h1 className="text-2xl font-poppins font-bold text-foreground">{fullName}</h1>
+                      <p className="text-muted-foreground">{userData.jobTitle || userData.role} at {userData.company}</p>
                     </div>
                   </div>
 
@@ -72,28 +77,31 @@ const Profile = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="flex items-center space-x-3">
                         <Mail className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{user.email}</span>
+                        <span className="text-sm">{userData.email}</span>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{user.phone}</span>
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">@{userData.username}</span>
                       </div>
                       <div className="flex items-center space-x-3">
                         <Building className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{user.company}</span>
+                        <span className="text-sm">{userData.company}</span>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <MapPin className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{user.location}</span>
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">{userData.experience} experience</span>
                       </div>
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
-                      {user.skills.map((skill) => (
-                        <Badge key={skill} variant="outline" className="text-xs">
-                          {skill}
+                      {userData.interests && (
+                        <Badge variant="outline" className="text-xs">
+                          {userData.interests}
                         </Badge>
-                      ))}
+                      )}
+                      <Badge variant="outline" className="text-xs">
+                        {userData.role}
+                      </Badge>
                     </div>
                   </div>
 
@@ -161,7 +169,7 @@ const Profile = () => {
                           <Label htmlFor="firstName">First Name</Label>
                           <Input
                             id="firstName"
-                            defaultValue={user.name.split(' ')[0]}
+                            defaultValue={userData.firstName}
                             disabled={!isEditing}
                           />
                         </div>
@@ -169,7 +177,7 @@ const Profile = () => {
                           <Label htmlFor="lastName">Last Name</Label>
                           <Input
                             id="lastName"
-                            defaultValue={user.name.split(' ')[1]}
+                            defaultValue={userData.lastName}
                             disabled={!isEditing}
                           />
                         </div>
@@ -180,26 +188,16 @@ const Profile = () => {
                         <Input
                           id="email"
                           type="email"
-                          defaultValue={user.email}
+                          defaultValue={userData.email}
                           disabled={!isEditing}
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Phone</Label>
+                        <Label htmlFor="username">Username</Label>
                         <Input
-                          id="phone"
-                          type="tel"
-                          defaultValue={user.phone}
-                          disabled={!isEditing}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="location">Location</Label>
-                        <Input
-                          id="location"
-                          defaultValue={user.location}
+                          id="username"
+                          defaultValue={userData.username}
                           disabled={!isEditing}
                         />
                       </div>
@@ -219,7 +217,7 @@ const Profile = () => {
                         <Label htmlFor="jobTitle">Job Title</Label>
                         <Input
                           id="jobTitle"
-                          defaultValue={user.role}
+                          defaultValue={userData.jobTitle || userData.role}
                           disabled={!isEditing}
                         />
                       </div>
@@ -228,7 +226,7 @@ const Profile = () => {
                         <Label htmlFor="company">Company</Label>
                         <Input
                           id="company"
-                          defaultValue={user.company}
+                          defaultValue={userData.company}
                           disabled={!isEditing}
                         />
                       </div>
@@ -237,7 +235,7 @@ const Profile = () => {
                         <Label htmlFor="experience">Years of Experience</Label>
                         <Select disabled={!isEditing}>
                           <SelectTrigger>
-                            <SelectValue defaultValue={user.experience} />
+                            <SelectValue defaultValue={userData.experience} />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="0-1">0-1 years</SelectItem>
@@ -250,10 +248,10 @@ const Profile = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="education">Education</Label>
+                        <Label htmlFor="interests">Primary Interests</Label>
                         <Input
-                          id="education"
-                          defaultValue={user.education}
+                          id="interests"
+                          defaultValue={userData.interests}
                           disabled={!isEditing}
                         />
                       </div>
@@ -268,7 +266,7 @@ const Profile = () => {
                   </CardHeader>
                   <CardContent>
                     <Textarea
-                      defaultValue={user.bio}
+                      defaultValue={`Passionate ${userData.jobTitle || userData.role} with ${userData.experience} of experience. Always eager to learn new skills and contribute to innovative projects.`}
                       rows={4}
                       disabled={!isEditing}
                       placeholder="Tell us about yourself..."
