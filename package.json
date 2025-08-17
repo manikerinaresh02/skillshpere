@@ -90,6 +90,5 @@
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2",
     "vite": "^5.0.0"
-    "build:dev": "vite build --mode development"
   }
 }
