@@ -1,19 +1,21 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
 
-interface User {
+interface Profile {
   id: string;
-  firstName: string;
-  lastName: string;
+  first_name: string | null;
+  last_name: string | null;
+  username: string | null;
+  job_title: string | null;
+  company: string | null;
+  experience: string | null;
+  interests: string | null;
+  avatar: string | null;
+}
+
+interface User extends Profile {
   email: string;
-  username: string;
-  role: string;
-  company?: string;
-  jobTitle?: string;
-  experience?: string;
-  interests?: string;
-  avatar?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 interface LoginCredentials {
@@ -36,6 +38,7 @@ interface RegisterData {
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -54,51 +57,84 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const isAuthenticated = !!user;
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, currentSession) => {
+        setSession(currentSession);
+        
+        if (currentSession?.user) {
+          // Fetch profile data
+          setTimeout(async () => {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', currentSession.user.id)
+              .single();
+
+            if (profile) {
+              setUser({
+                ...profile,
+                email: currentSession.user.email!,
+              });
+            }
+          }, 0);
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      
+      if (currentSession?.user) {
+        // Fetch profile data
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentSession.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile) {
+              setUser({
+                ...profile,
+                email: currentSession.user.email!,
+              });
+            }
+            setIsLoading(false);
+          });
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      console.log('Login attempt with credentials:', credentials);
       setIsLoading(true);
       setError(null);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Validate credentials - only allow demo credentials
-      if (credentials.email === 'demo@skillsphere.com' && credentials.password === 'demo123') {
-        console.log('Login successful with demo credentials');
-        // Mock successful login
-        const mockUser: User = {
-          id: '1',
-          firstName: 'Alex',
-          lastName: 'Chen',
-          email: credentials.email,
-          username: 'alexchen',
-          role: 'Senior Developer',
-          company: 'TechCorp',
-          jobTitle: 'Senior Developer',
-          experience: '5 years',
-          interests: 'Full Stack Development',
-          avatar: '/placeholder.svg',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        
-        setUser(mockUser);
-      } else {
-        console.log('Login failed - invalid credentials');
-        // Invalid credentials - set error and throw
-        const errorMessage = 'Invalid credentials. Please try again.';
-        setError(errorMessage);
-        throw new Error(errorMessage);
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password: credentials.password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
+        throw signInError;
       }
     } catch (error) {
-      console.error('Login error:', error);
-      // The error is already set in the else block, so we don't need to set it again
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      setError(errorMessage);
       throw error;
     } finally {
       setIsLoading(false);
@@ -107,54 +143,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (userData: RegisterData) => {
     try {
-      console.log('Registration started with data:', userData);
       setIsLoading(true);
       setError(null);
       
       // Validate password confirmation
       if (userData.password !== userData.confirmPassword) {
-        const errorMessage = 'Passwords do not match. Please try again.';
+        const errorMessage = 'Passwords do not match';
         setError(errorMessage);
         throw new Error(errorMessage);
       }
+
+      const redirectUrl = `${window.location.origin}/`;
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock successful registration
-      const mockUser: User = {
-        id: Date.now().toString(),
-        firstName: userData.firstName,
-        lastName: userData.lastName,
+      const { error: signUpError } = await supabase.auth.signUp({
         email: userData.email,
-        username: userData.username,
-        role: userData.jobTitle || 'Developer',
-        company: userData.company,
-        jobTitle: userData.jobTitle,
-        experience: userData.experience,
-        interests: userData.interests,
-        avatar: '/placeholder.svg',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      console.log('Registration successful, setting user:', mockUser);
-      setUser(mockUser);
-    } catch (error) {
-      console.error('Registration error:', error);
-      // Set error message if not already set
-      if (!error) {
-        const errorMessage = error instanceof Error ? error.message : 'Registration failed';
-        setError(errorMessage);
+        password: userData.password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            username: userData.username,
+            job_title: userData.jobTitle,
+            company: userData.company,
+            experience: userData.experience,
+            interests: userData.interests,
+          },
+        },
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        throw signUpError;
       }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      setError(errorMessage);
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
+    setSession(null);
     setError(null);
   };
 
@@ -162,8 +196,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
   };
 
+  const isAuthenticated = !!user && !!session;
+
   const value: AuthContextType = {
     user,
+    session,
     isAuthenticated,
     isLoading,
     error,
