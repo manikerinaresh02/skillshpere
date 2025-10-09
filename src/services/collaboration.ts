@@ -1,13 +1,11 @@
 import { apiClient } from '../utils/api';
 import {
   StudyGroup,
-  GroupMember,
   LiveSession,
-  SessionParticipant,
   PeerLearningRequest,
   ProgressData,
-  StudyGroupFilters,
-  CollaborationFilters
+  CollaborationFilters,
+  StudyGroupFilters
 } from '../types/phase3';
 
 export const collaborationService = {
@@ -63,9 +61,12 @@ export const collaborationService = {
   getStudyGroups: async (filters?: StudyGroupFilters): Promise<StudyGroup[]> => {
     try {
       const params = new URLSearchParams();
+      
       if (filters?.category) params.append('category', filters.category);
       if (filters?.isActive !== undefined) params.append('isActive', filters.isActive.toString());
       if (filters?.search) params.append('search', filters.search);
+      if (filters?.maxMembers) params.append('maxMembers', filters.maxMembers.toString());
+      if (filters?.tags) params.append('tags', filters.tags.join(','));
 
       const response = await apiClient.get(`/collaboration/study-groups?${params}`);
       return response.data;

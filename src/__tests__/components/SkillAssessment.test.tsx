@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SkillAssessment } from '../../components/dashboard/SkillAssessment';
 import { skillService } from '../../services/skills';

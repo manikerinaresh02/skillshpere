@@ -1,6 +1,4 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { MarketInsights } from '../../components/dashboard/MarketInsights';
 import { marketService } from '../../services/marketData';
 

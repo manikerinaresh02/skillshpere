@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Trophy,
   Star,
-  Zap,
   Target,
-  Users,
-  BookOpen,
-  Award,
   TrendingUp,
+  Award,
   Calendar,
-  CheckCircle,
-  AlertCircle
+  AlertCircle,
+  BookOpen,
+  Users,
+  Zap,
+  CheckCircle
 } from 'lucide-react';
 
 // Define types locally to avoid import issues
@@ -53,6 +53,8 @@ interface UserStats {
   rankProgress: number;
   nextRank: string;
   pointsToNextRank: number;
+  experience: number;
+  experienceToNextLevel: number;
 }
 
 export const Achievements = () => {
@@ -174,7 +176,9 @@ export const Achievements = () => {
           rank: 'Apprentice',
           rankProgress: 75,
           nextRank: 'Scholar',
-          pointsToNextRank: 75
+          pointsToNextRank: 75,
+          experience: 1200,
+          experienceToNextLevel: 200
         };
         
         setUserStats(mockUserStats);
@@ -281,7 +285,7 @@ export const Achievements = () => {
                   <div className="text-sm text-muted-foreground">Total Points</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-accent">{userStats.achievements}</div>
+                  <div className="text-2xl font-bold text-accent">{userStats.achievementsUnlocked}</div>
                   <div className="text-sm text-muted-foreground">Achievements</div>
                 </div>
                 <div className="text-center">

@@ -1,15 +1,13 @@
 import { apiClient } from '../utils/api';
 import {
   LearningPath,
-  LearningStep,
-  LearningResource,
-  AdaptiveAssessment,
-  AdaptiveQuestion,
-  PerformanceMetric,
   SmartRecommendation,
   PredictionResult,
+  CareerPrediction,
+  LearningStep,
+  LearningResource,
+  PerformanceMetric,
   PredictionFactor,
-  CareerPrediction
 } from '../types/phase3';
 
 export const aiService = {
@@ -155,7 +153,7 @@ export const aiService = {
   },
 
   // Adaptive Assessments
-  createAdaptiveAssessment: async (skillId: string, userId: string): Promise<AdaptiveAssessment> => {
+  createAdaptiveAssessment: async (skillId: string, userId: string): Promise<any> => { // Changed return type to any as AdaptiveAssessment is removed
     try {
       const response = await apiClient.post('/ai/adaptive-assessments', {
         skillId,
@@ -198,7 +196,7 @@ export const aiService = {
     }
   },
 
-  submitAdaptiveAnswer: async (assessmentId: string, questionId: string, answer: string): Promise<AdaptiveAssessment> => {
+  submitAdaptiveAnswer: async (assessmentId: string, questionId: string, answer: string): Promise<any> => { // Changed return type to any
     try {
       const response = await apiClient.post(`/ai/adaptive-assessments/${assessmentId}/answer`, {
         questionId,
@@ -233,7 +231,7 @@ export const aiService = {
     }
   },
 
-  getNextQuestion: async (assessmentId: string): Promise<AdaptiveQuestion> => {
+  getNextQuestion: async (assessmentId: string): Promise<any> => { // Changed return type to any
     try {
       const response = await apiClient.get(`/ai/adaptive-assessments/${assessmentId}/next-question`);
       return response.data;

@@ -1,18 +1,19 @@
 import { apiClient } from '../utils/api';
 import {
   LearningAnalytics,
-  WeeklyGoal,
+  SkillProgress,
   PerformanceTrend,
+  SkillCorrelation,
+  CareerPath,
+  PerformancePrediction,
+  WeeklyGoal,
   SkillGap,
   TimeDistribution,
   CategoryTime,
   DailyPattern,
   WeeklyPattern,
-  SkillCorrelation,
   CorrelatedSkill,
-  CareerPath,
   SalaryRange,
-  PerformancePrediction,
   PredictionTimeline,
   AnalyticsFilters
 } from '../types/phase3';
@@ -36,10 +37,7 @@ export const analyticsService = {
             currentLevel: 75,
             targetLevel: 90,
             hoursSpent: 45,
-            lastAssessment: null,
-            nextAssessment: '2024-02-15',
-            learningPath: [],
-            achievements: []
+            lastUpdated: '2024-01-01T00:00:00Z',
           },
           {
             skillId: 'javascript',
@@ -47,10 +45,7 @@ export const analyticsService = {
             currentLevel: 85,
             targetLevel: 95,
             hoursSpent: 60,
-            lastAssessment: null,
-            nextAssessment: '2024-02-10',
-            learningPath: [],
-            achievements: []
+            lastUpdated: '2024-01-01T00:00:00Z',
           }
         ],
         learningStreak: 12,

@@ -45,15 +45,12 @@ export const authService = {
       // Mock successful login
       const mockUser: User = {
         id: '1',
-        firstName: 'Alex',
-        lastName: 'Chen',
+        name: 'Alex Chen',
         email: credentials.email,
-        username: 'alexchen',
         role: 'Senior Developer',
         company: 'TechCorp',
-        jobTitle: 'Senior Developer',
         experience: '5 years',
-        interests: 'Full Stack Development',
+        interests: ['Full Stack Development', 'React', 'Node.js'],
         avatar: '/placeholder.svg',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -79,13 +76,10 @@ export const authService = {
       // Mock successful registration
       const mockUser: User = {
         id: Date.now().toString(),
-        firstName: userData.firstName,
-        lastName: userData.lastName,
+        name: userData.name,
         email: userData.email,
-        username: userData.username,
-        role: userData.jobTitle || 'Developer',
+        role: userData.role || 'Developer',
         company: userData.company,
-        jobTitle: userData.jobTitle,
         experience: userData.experience,
         interests: userData.interests,
         avatar: '/placeholder.svg',

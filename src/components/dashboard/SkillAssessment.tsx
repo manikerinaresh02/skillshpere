@@ -1,24 +1,21 @@
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  Brain, 
-  Clock, 
-  Target, 
-  Trophy, 
-  TrendingUp, 
-  BookOpen, 
-  Play,
-  CheckCircle,
+import {
+  Brain,
+  Clock,
+  Target,
+  Star,
+  BookOpen,
+  Code,
+  Award,
   AlertCircle,
-  Timer
+  PlayCircle,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 
 // Define types locally to avoid import issues
@@ -346,7 +343,7 @@ export const SkillAssessment = () => {
           <Card className="glass-card">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-primary" />
+                <Award className="w-5 h-5 text-primary" />
                 <span>Assessment Complete!</span>
               </CardTitle>
             </CardHeader>
@@ -468,7 +465,7 @@ export const SkillAssessment = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <Timer className="w-4 h-4 text-secondary" />
+                    <Clock className="w-4 h-4 text-secondary" />
                     <span className="font-semibold">{formatTime(timeRemaining)}</span>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -506,55 +503,73 @@ export const SkillAssessment = () => {
                 <h3 className="text-lg font-semibold mb-4">{currentQuestion.question}</h3>
                 
                 {currentQuestion.type === 'multiple-choice' && currentQuestion.options && (
-                  <RadioGroup
-                    value={answers[currentQuestion.id] || ''}
-                    onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}
-                  >
+                  <div className="space-y-2">
                     {currentQuestion.options.map((option, index) => (
                       <div key={index} className="flex items-center space-x-2 p-3 rounded-lg border border-glass-border/20 hover:bg-glass/20 transition-colors">
-                        <RadioGroupItem value={option} id={`option-${index}`} />
-                        <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          id={`option-${index}`}
+                          name={`question-${currentQuestion.id}`}
+                          value={option}
+                          checked={answers[currentQuestion.id] === option}
+                          onChange={() => handleAnswerChange(currentQuestion.id, option)}
+                          className="form-radio h-4 w-4 text-primary focus:ring-primary"
+                        />
+                        <label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
                           {option}
-                        </Label>
+                        </label>
                       </div>
                     ))}
-                  </RadioGroup>
+                  </div>
                 )}
 
                 {currentQuestion.type === 'true-false' && (
-                  <RadioGroup
-                    value={answers[currentQuestion.id] || ''}
-                    onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}
-                  >
+                  <div className="space-y-2">
                     <div className="flex items-center space-x-2 p-3 rounded-lg border border-glass-border/20 hover:bg-glass/20 transition-colors">
-                      <RadioGroupItem value="true" id="true" />
-                      <Label htmlFor="true" className="flex-1 cursor-pointer">True</Label>
+                      <input
+                        type="radio"
+                        id="true"
+                        name={`question-${currentQuestion.id}`}
+                        value="true"
+                        checked={answers[currentQuestion.id] === "true"}
+                        onChange={() => handleAnswerChange(currentQuestion.id, "true")}
+                        className="form-radio h-4 w-4 text-primary focus:ring-primary"
+                      />
+                      <label htmlFor="true" className="flex-1 cursor-pointer">True</label>
                     </div>
                     <div className="flex items-center space-x-2 p-3 rounded-lg border border-glass-border/20 hover:bg-glass/20 transition-colors">
-                      <RadioGroupItem value="false" id="false" />
-                      <Label htmlFor="false" className="flex-1 cursor-pointer">False</Label>
+                      <input
+                        type="radio"
+                        id="false"
+                        name={`question-${currentQuestion.id}`}
+                        value="false"
+                        checked={answers[currentQuestion.id] === "false"}
+                        onChange={() => handleAnswerChange(currentQuestion.id, "false")}
+                        className="form-radio h-4 w-4 text-primary focus:ring-primary"
+                      />
+                      <label htmlFor="false" className="flex-1 cursor-pointer">False</label>
                     </div>
-                  </RadioGroup>
+                  </div>
                 )}
 
                 {currentQuestion.type === 'coding' && (
                   <div className="space-y-4">
-                    <Textarea
+                    <textarea
                       placeholder="Write your code here..."
                       value={answers[currentQuestion.id] || ''}
                       onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                      className="min-h-[200px] font-mono"
+                      className="w-full h-32 p-3 rounded-lg border border-glass-border/20 bg-glass/10 text-white placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
                 )}
 
                 {currentQuestion.type === 'scenario' && (
                   <div className="space-y-4">
-                    <Textarea
+                    <textarea
                       placeholder="Describe your approach..."
                       value={answers[currentQuestion.id] || ''}
                       onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                      className="min-h-[150px]"
+                      className="w-full h-32 p-3 rounded-lg border border-glass-border/20 bg-glass/10 text-white placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
                 )}
@@ -635,7 +650,7 @@ export const SkillAssessment = () => {
                     </div>
                   </div>
                   <Button className="w-full mt-4" size="sm">
-                    <Play className="w-4 h-4 mr-2" />
+                    <PlayCircle className="w-4 h-4 mr-2" />
                     Start Assessment
                   </Button>
                 </motion.div>

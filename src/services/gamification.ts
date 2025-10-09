@@ -1,14 +1,9 @@
 import { apiClient } from '../utils/api';
 import {
   Achievement,
-  AchievementRequirement,
-  Leaderboard,
-  LeaderboardEntry,
-  LeaderboardDetails,
   Badge,
-  BadgeRequirement,
-  UserStats,
-  GamificationFilters
+  Leaderboard,
+  UserStats
 } from '../types/phase3';
 
 export const gamificationService = {

@@ -1,6 +1,6 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { StudyGroup } from '../../components/collaboration/StudyGroup';
+import { LiveSession } from '../../components/collaboration/LiveSession';
 import { collaborationService } from '../../services/collaboration';
 
 jest.mock('../../services/collaboration', () => ({

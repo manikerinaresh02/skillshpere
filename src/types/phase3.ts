@@ -413,6 +413,10 @@ export interface UserStats {
   totalLearningHours: number;
   skillsCompleted: number;
   rank: number;
+  // Add missing properties that are used in components
+  totalAssessments?: number;
+  averageScore?: number;
+  lastActive?: string;
 }
 
 // Filter and Query Types
