@@ -96,21 +96,21 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <Navigation />
-      <div className="container mx-auto px-6 py-8 pt-24">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 pt-20 sm:pt-24">
         <div className="glass-card rounded-xl p-1 mb-8">
           <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-shrink-0 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-300 whitespace-nowrap ${
+                className={`flex-shrink-0 flex items-center justify-center space-x-1 sm:space-x-2 py-2 sm:py-3 px-2 sm:px-4 rounded-lg font-medium transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
                   activeTab === tab.id
                     ? 'bg-primary text-primary-foreground shadow-glow'
                     : 'text-muted-foreground hover:text-foreground hover:bg-glass/20'
                 }`}
               >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
+                <span className="w-4 h-4">{tab.icon}</span>
+                <span className="hidden xs:inline sm:inline">{tab.label}</span>
               </button>
             ))}
           </div>
