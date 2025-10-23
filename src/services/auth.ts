@@ -1,6 +1,9 @@
 // Mock authentication service
 import { User, LoginCredentials, RegisterData } from '../types';
 
+// Export User type for backward compatibility
+export type { User } from '../types';
+
 export const authService = {
   tokenKey: 'skillsphere_token',
   userKey: 'skillsphere_user',

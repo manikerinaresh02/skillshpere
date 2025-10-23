@@ -22,8 +22,8 @@ export interface RegisterData {
   name: string;
   email: string;
   password: string;
-  confirmPassword: string;
-  role: string;
+  confirmPassword?: string;
+  role?: string;
   company?: string;
   experience?: string;
   interests?: string[];

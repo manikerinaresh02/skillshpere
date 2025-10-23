@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
+import { User, LoginCredentials, RegisterData } from '@/types';
 
-interface Profile {
+interface SupabaseProfile {
   id: string;
   first_name: string | null;
   last_name: string | null;
@@ -14,27 +15,22 @@ interface Profile {
   avatar: string | null;
 }
 
-interface User extends Profile {
-  email: string;
-}
-
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-interface RegisterData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword?: string;
-  username: string;
-  jobTitle?: string;
-  company?: string;
-  experience?: string;
-  interests?: string;
-}
+// Helper function to convert Supabase profile to User type
+const profileToUser = (profile: SupabaseProfile, email: string): User => {
+  const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'User';
+  return {
+    id: profile.id,
+    name: fullName,
+    email,
+    role: profile.job_title || 'User',
+    company: profile.company || undefined,
+    experience: profile.experience || undefined,
+    interests: profile.interests ? profile.interests.split(',').map(i => i.trim()) : undefined,
+    avatar: profile.avatar || undefined,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+};
 
 interface AuthContextType {
   user: User | null;
@@ -77,10 +73,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               .single();
 
             if (profile) {
-              setUser({
-                ...profile,
-                email: currentSession.user.email!,
-              });
+              setUser(profileToUser(profile, currentSession.user.email!));
             }
           }, 0);
         } else {
@@ -103,10 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           .single()
           .then(({ data: profile }) => {
             if (profile) {
-              setUser({
-                ...profile,
-                email: currentSession.user.email!,
-              });
+              setUser(profileToUser(profile, currentSession.user.email!));
             }
             setIsLoading(false);
           });
@@ -155,19 +145,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const redirectUrl = `${window.location.origin}/`;
       
+      const nameParts = userData.name.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
       const { error: signUpError } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            username: userData.username,
-            job_title: userData.jobTitle,
+            first_name: firstName,
+            last_name: lastName,
+            username: userData.email.split('@')[0],
+            job_title: userData.role || 'User',
             company: userData.company,
             experience: userData.experience,
-            interests: userData.interests,
+            interests: userData.interests ? userData.interests.join(',') : null,
           },
         },
       });

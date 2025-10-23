@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Eye, EyeOff, Mail, Lock, User, Building, Github, Chrome } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-interface RegisterData {
+interface RegisterFormData {
   firstName: string;
   lastName: string;
   email: string;
@@ -28,7 +28,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<Partial<RegisterData>>({});
+  const [formData, setFormData] = useState<Partial<RegisterFormData>>({});
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,7 +47,7 @@ const Register = () => {
     clearError();
   }, [clearError]);
 
-  const handleInputChange = (field: keyof RegisterData, value: string) => {
+  const handleInputChange = (field: keyof RegisterFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear step error when user starts typing
     if (stepErrors[field]) {
@@ -99,22 +99,20 @@ const Register = () => {
     if (step === 3) {
       console.log('Processing step 3 registration');
       try {
-        const registerData: RegisterData = {
-          firstName: formData.firstName || '',
-          lastName: formData.lastName || '',
+        const fullName = `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
+        
+        await register({
+          name: fullName || formData.username || 'User',
           email: formData.email || '',
           password: formData.password || '',
           confirmPassword: formData.confirmPassword,
-          username: formData.username || '',
-          jobTitle: formData.jobTitle,
+          role: formData.jobTitle,
           company: formData.company,
           experience: formData.experience,
-          interests: formData.interests,
-          phone: formData.phone || '',
-        };
+          interests: formData.interests ? [formData.interests] : undefined,
+        });
 
-        console.log('Calling register with data:', registerData);
-        await register(registerData);
+        console.log('Calling register');
         console.log('Registration completed successfully');
         // Navigation will be handled by useEffect when isAuthenticated changes
       } catch (error) {
@@ -300,7 +298,7 @@ const Register = () => {
                       placeholder="+1 (555) 123-4567"
                       disabled={isLoading}
                       value={formData.phone || ''}
-                      onChange={(e) => handleInputChange('phone' as keyof RegisterData, e.target.value)}
+                      onChange={(e) => handleInputChange('phone' as keyof RegisterFormData, e.target.value)}
                     />
                   </div>
                 </motion.div>

@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { User, Mail, Phone, Building, MapPin, Edit, Save, Camera, Settings, Bell, Shield, Palette } from 'lucide-react';
+import { User, Mail, Building, Edit, Save, Camera, Settings, Bell, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Profile = () => {
@@ -21,21 +21,20 @@ const Profile = () => {
   const { user } = useAuth();
 
   // Use authenticated user data or fallback to demo data
-  const userData = user || {
-    firstName: 'Alex',
-    lastName: 'Chen',
+  const fallbackData = {
+    name: 'Alex Chen',
     email: 'alex.chen@example.com',
-    username: 'alexchen',
     role: 'Senior Developer',
     company: 'TechCorp',
-    jobTitle: 'Senior Developer',
     experience: '5 years',
-    interests: 'Full Stack Development',
+    interests: ['Full Stack Development'],
     avatar: '/placeholder.svg',
   };
 
-  const fullName = `${userData.firstName} ${userData.lastName}`;
-  const initials = `${userData.firstName?.[0] || 'A'}${userData.lastName?.[0] || 'C'}`;
+  const userData = user || fallbackData;
+  const fullName = userData.name || 'User';
+  const nameParts = fullName.split(' ');
+  const initials = nameParts.map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
   return (
     <div className="min-h-screen bg-background">
@@ -68,7 +67,7 @@ const Profile = () => {
                     </div>
                     <div className="text-center">
                       <h1 className="text-2xl font-poppins font-bold text-foreground">{fullName}</h1>
-                      <p className="text-muted-foreground">{userData.jobTitle || userData.role} at {userData.company}</p>
+                      <p className="text-muted-foreground">{userData.role} at {userData.company}</p>
                     </div>
                   </div>
 
@@ -81,7 +80,7 @@ const Profile = () => {
                       </div>
                       <div className="flex items-center space-x-3">
                         <User className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">@{userData.username}</span>
+                        <span className="text-sm">{userData.role}</span>
                       </div>
                       <div className="flex items-center space-x-3">
                         <Building className="w-4 h-4 text-muted-foreground" />
@@ -89,16 +88,16 @@ const Profile = () => {
                       </div>
                       <div className="flex items-center space-x-3">
                         <User className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{userData.experience} experience</span>
+                        <span className="text-sm">{userData.experience || 'N/A'} experience</span>
                       </div>
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
-                      {userData.interests && (
-                        <Badge variant="outline" className="text-xs">
-                          {userData.interests}
+                      {userData.interests && Array.isArray(userData.interests) && userData.interests.map((interest, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          {interest}
                         </Badge>
-                      )}
+                      ))}
                       <Badge variant="outline" className="text-xs">
                         {userData.role}
                       </Badge>
@@ -164,23 +163,13 @@ const Profile = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="firstName">First Name</Label>
-                          <Input
-                            id="firstName"
-                            defaultValue={userData.firstName}
-                            disabled={!isEditing}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="lastName">Last Name</Label>
-                          <Input
-                            id="lastName"
-                            defaultValue={userData.lastName}
-                            disabled={!isEditing}
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">Full Name</Label>
+                        <Input
+                          id="fullName"
+                          defaultValue={userData.name}
+                          disabled={!isEditing}
+                        />
                       </div>
                       
                       <div className="space-y-2">
@@ -193,14 +182,6 @@ const Profile = () => {
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="username">Username</Label>
-                        <Input
-                          id="username"
-                          defaultValue={userData.username}
-                          disabled={!isEditing}
-                        />
-                      </div>
                     </CardContent>
                   </Card>
 
@@ -217,7 +198,7 @@ const Profile = () => {
                         <Label htmlFor="jobTitle">Job Title</Label>
                         <Input
                           id="jobTitle"
-                          defaultValue={userData.jobTitle || userData.role}
+                          defaultValue={userData.role}
                           disabled={!isEditing}
                         />
                       </div>
@@ -251,7 +232,7 @@ const Profile = () => {
                         <Label htmlFor="interests">Primary Interests</Label>
                         <Input
                           id="interests"
-                          defaultValue={userData.interests}
+                          defaultValue={Array.isArray(userData.interests) ? userData.interests.join(', ') : ''}
                           disabled={!isEditing}
                         />
                       </div>
@@ -266,7 +247,7 @@ const Profile = () => {
                   </CardHeader>
                   <CardContent>
                     <Textarea
-                      defaultValue={`Passionate ${userData.jobTitle || userData.role} with ${userData.experience} of experience. Always eager to learn new skills and contribute to innovative projects.`}
+                      defaultValue={`Passionate ${userData.role} with ${userData.experience || 'several years'} of experience. Always eager to learn new skills and contribute to innovative projects.`}
                       rows={4}
                       disabled={!isEditing}
                       placeholder="Tell us about yourself..."

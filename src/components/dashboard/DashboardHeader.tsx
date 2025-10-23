@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, Settings, Plus } from 'lucide-react';
-import { User } from '../../services/auth';
+import { User } from '@/types';
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -10,14 +10,16 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ user }: DashboardHeaderProps) => {
   // Fallback user data if user is null
-  const userData = user || {
-    firstName: 'Alex',
-    lastName: 'Chen',
+  const fallbackUser = {
+    name: 'Alex Chen',
     email: 'alex.chen@example.com',
     avatar: '/placeholder.svg',
     role: 'Senior Developer',
     company: 'TechCorp'
   };
+  
+  const userData = user || fallbackUser;
+  const firstName = userData.name?.split(' ')[0] || 'User';
 
   return (
     <motion.div
@@ -31,15 +33,15 @@ export const DashboardHeader = ({ user }: DashboardHeaderProps) => {
           {/* User Info */}
           <div className="flex items-center space-x-4">
             <Avatar className="w-16 h-16 border-2 border-primary/20">
-              <AvatarImage src={userData.avatar} alt={`${userData.firstName} ${userData.lastName}`} />
+              <AvatarImage src={userData.avatar} alt={userData.name} />
               <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">
-                {userData.firstName.split(' ').map(n => n[0]).join('')}
+                {userData.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
               </AvatarFallback>
             </Avatar>
 
             <div>
               <h1 className="text-2xl font-poppins font-bold text-foreground">
-                Welcome back, {userData.firstName}! 👋
+                Welcome back, {firstName}! 👋
               </h1>
               <p className="text-muted-foreground">
                 {userData.role} at {userData.company} • Last updated 2 hours ago
